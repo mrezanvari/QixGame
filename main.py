@@ -27,7 +27,7 @@ def main():
                                 run = False
                 draw_window()
 
-        pygame.quit();
+        pygame.quit()
 
 if __name__ == "__main__":
         main()
