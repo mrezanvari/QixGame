@@ -1,4 +1,5 @@
 import sys, os
-import pygame
+import pygame.mixer as mixer 
 
-gameOverSound = pygame.mixer.Sound(os.path.join("assets", 'uDead.wav'))
+mixer.init()
+gameOverSound = mixer.Sound(os.path.join("assets", 'uDead.wav'))

@@ -25,11 +25,20 @@ def checkCollision(rect1, rect2):
     offsetX = rect2.x - rect1.x
     offsetY = rect2.y - rect1.y
     return rect1.mask.overlap(rect2.mask, (offsetX, offsetY)) != None
+
+# def filterMem(memArr):
+#         maxX = 0
+#         maxy = 0
+#         outArr = []
+#         for i in memArr:
+
         
 def main():
 
         speed = 5 # the speed of the main character; can and may change with the level
         offset = 40 # this is the image offset; used if the png has empty space. with this the player img will get closer to the bounderies
+        memMovement = [] # used to draw line behind the player once they enter the grid
+        dirChanges = [] # holds the coordinates of the grid which was covered by the player/ hols the coordinates in which the player changed direction
         clock = pygame.time.Clock()
         run = True
         draw_window()
@@ -39,6 +48,7 @@ def main():
         freedomCoor = (0, 0) # the coordinate of which the player held down the rshift key to release themselves!
 
         enemies = [] 
+        lastKey =  None   
 
         for i in range(5): # init enemies with random spawn location
                 enemies.append(Characters.Enemy(random.randrange(WIDTH - offset), random.randrange(HEIGHT - offset)))
@@ -48,6 +58,23 @@ def main():
 
         while run: 
                 clock.tick(FPS)
+                if canGoIngrid: # this is for the tail line. If the player is holding down the shift key, start drawing
+                        memMovement.append((player.x + offset / 2, player.y + offset))
+                        pygame.draw.aalines(WIN, WHITE, False, memMovement)
+                        # If the player was in the grid and now the moved to the edges, we should fill the area that they have covered:
+                        if (player.y <= 0 or player.y >= HEIGHT - offset - 6) or (player.x <= 0 or player.x >= WIDTH - offset - 6): 
+                                pygame.draw.aalines(WIN, WHITE, True, memMovement) # close the line
+                                dirChanges.append((player.x, player.y)) # add the endpoint to the dirchange so we have all the coordinates that we need to fillout
+
+                                """
+                                Here we need to fillout the rectangle and maybe calculate the area
+                                """
+
+                                pygame.display.flip()
+                                freedomCoor = (player.x, player.y) # player will let go of the shift once they made a rectangle so save that to continue from where they got to the edges
+                                dirChanges.clear()
+                                
+
                 pygame.display.update() 
 
                 for event in pygame.event.get():
@@ -60,25 +87,35 @@ def main():
 
                                 if event.key == pygame.K_RSHIFT: # save the coordinate
                                         freedomCoor = (player.x, player.y)
+                                        memMovement.append((player.x + offset / 2, player.y + offset))
+                                        dirChanges.clear()
+                                        dirChanges.append((player.x, player.y))
+                                
+                                # check for any new direction input
+                                if (event.key == pygame.K_LEFT or event.key == pygame.K_a) or (event.key == pygame.K_RIGHT or event.key == pygame.K_d) or  (event.key == pygame.K_UP or event.key == pygame.K_w) or  (event.key == pygame.K_DOWN or event.key == pygame.K_d):
+                                        dirChanges.append((player.x, player.y)) # this indicates a change in direction
+                                        # print("Dir Change!" , dirChanges)
                         
                         if event.type == pygame.KEYUP:
                                 if event.key == pygame.K_RSHIFT:
                                         canGoIngrid = False # if rshift released, dont go in the grid anymore and jump back to freedomCoor
                                         player.x = freedomCoor[0]
                                         player.y = freedomCoor[1]
+                                        memMovement.clear()
+                                        dirChanges.clear()
 
                 keys = pygame.key.get_pressed()
 
                 if (keys [pygame.K_RSHIFT]): 
                         canGoIngrid = True # jumps in the grid
-                        
-                
+
                 if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and player.x - speed + 15 > 0:
-                        if  canGoIngrid or (player.y <= 0 or player.y >= HEIGHT - offset - 6):
+                        if  canGoIngrid or (player.y <= 0 or player.y >= HEIGHT - offset - 6): # either be on the edges, or hold down the shift key to move
                                 player.x -= speed
 
+
                 elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and player.x + speed + offset < WIDTH: # elif will prevent other angles; so only right angles are allowed...
-                         if canGoIngrid or (player.y <= 0 or player.y >= HEIGHT - offset - 6):
+                        if canGoIngrid or (player.y <= 0 or player.y >= HEIGHT - offset - 6):
                                 player.x += speed
 
                 elif (keys[pygame.K_UP] or keys[pygame.K_w]) and player.y + speed > 0:
@@ -86,7 +123,7 @@ def main():
                                 player.y -= speed
 
                 elif (keys[pygame.K_DOWN] or keys[pygame.K_s]) and player.y + speed + offset < HEIGHT :
-                       if canGoIngrid or (player.x <= 0 or player.x >= WIDTH - offset - 6):
+                        if canGoIngrid or (player.x <= 0 or player.x >= WIDTH - offset - 6):
                                 player.y += speed
                                 
                 WIN.fill(BLACK)  
@@ -94,7 +131,7 @@ def main():
                 for enemy in enemies:
                         enemy.draw(WIN)
 
-                for enemy in enemies:
+                for enemy in enemies: # enemy collisions
                         if checkCollision(player, enemy):
                                 print('u dead!')
                                 player.health -= 10
