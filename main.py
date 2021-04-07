@@ -36,7 +36,7 @@ def main():
         clock = pygame.time.Clock()
         run = True
         draw_window()
-        SoundFx.inGameInit()
+        SoundFx.inGameInit() # start music
 
         player = Characters.mainCharacter(round((WIDTH - offset) / 2), 455)
         canGoIngrid = False
@@ -121,12 +121,12 @@ def main():
                         if canGoIngrid or (player.x <= 0 or player.x >= WIDTH - offset - 6):
                                 player.y += speed
                 
-                elif (keys[pygame.K_ESCAPE]):
+                elif (keys[pygame.K_ESCAPE]): # pause menu
                         canGoIngrid = False
                         memMovement.clear()
                         SoundFx.inGamePause()
                         Menu.renderMenu(menuType.pauseMenu)
-                        player.x, player.y = freedomCoor
+                        player.x, player.y = freedomCoor # spawn back
                         SoundFx.inGameUnPause()
                                 
                 WIN.fill(BLACK)  
@@ -142,7 +142,7 @@ def main():
                                 SoundFx.gameOverSound.play(0)
                                 pygame.time.wait(5000)
                                 freedomCoor = (player.x, player.y)
-                                Menu.renderMenu(menuType.mainMenu)
+                                Menu.renderMenu(menuType.mainMenu) # jump to main menu
                                 main()
                 
         pygame.quit()

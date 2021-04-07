@@ -1,5 +1,7 @@
 """
 Menu class: This class will provide functions and classes to deal with menu and handle user input.
+
+This class is portable and costomizable so any addition to the menu options should work with little to no issues...
 """
 
 import os
@@ -11,20 +13,20 @@ pygame.font.init()
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-RED = (255,99,71)
+RED = (255,99,71) # not like red red, more like tomato red!
 
-class menuType(Enum):
+class menuType(Enum): # menu types; will be selected from main.py
     mainMenu = 0
     pauseMenu = 1
 
-
 class Menu():
+
     def renderMenu(type):
-        
+
         winW, winH = pygame.display.get_surface().get_size()
         window = pygame.display.get_surface()
-        backgroundImg = BLACK # could be an image for now it's a black screen
-        hovericon = pygame.transform.scale(pygame.image.load(os.path.join("assets", "frog.png")) , (50,50))#just test lol 
+        backgroundImg = BLACK # could be an image for now it's a black screen; not used for now
+        hovericon = pygame.transform.scale(pygame.image.load(os.path.join("assets", "frog.png")) , (50,50)) # It is also possible to have dynamic hoverIcons... but for now...
         font = pygame.font.SysFont('Comic Sans MS', 40)
         offsetX = 20 # this is based on the size of the font 
         offsetY = 10 
@@ -40,7 +42,7 @@ class Menu():
         while run:
             
             window.fill(BLACK)
-            for index, option in enumerate(options):
+            for index, option in enumerate(options): # draw texts and highlight the selected one
                 text = font.render(option, False, RED if selectedIndex == index else WHITE)
                 window.blit(text, options[option])
                 if selectedIndex == index:
@@ -64,7 +66,8 @@ class Menu():
                 if selectedIndex == 0:
                     run = False # jump to main
                     SoundFx.titleMenu.stop()
-                elif selectedIndex == 1:
+
+                elif selectedIndex == 1: # exit the game
                     pygame.quit()
 
             pygame.display.update() 
