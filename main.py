@@ -80,7 +80,7 @@ def main():
                                 if event.key == pygame.K_p: # press 'p' to print the main character's location
                                         print('X =', player.x, '     Y =', player.y) # debug
 
-                                if event.key == pygame.K_RSHIFT: # save the coordinate
+                                if event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT: # save the coordinate
                                         freedomCoor = (player.x, player.y)
                                         memMovement.append((player.x + offset / 2, player.y + offset))
                                         dirChanges.clear()
@@ -92,7 +92,7 @@ def main():
                                         # print("Dir Change!" , dirChanges)
                         
                         if event.type == pygame.KEYUP:
-                                if event.key == pygame.K_RSHIFT:
+                                if event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
                                         canGoIngrid = False # if rshift released, dont go in the grid anymore and jump back to freedomCoor
                                         player.x = freedomCoor[0]
                                         player.y = freedomCoor[1]
@@ -101,7 +101,7 @@ def main():
 
                 keys = pygame.key.get_pressed()
 
-                if (keys [pygame.K_RSHIFT]): 
+                if (keys [pygame.K_RSHIFT] or keys [pygame.K_LSHIFT]): 
                         canGoIngrid = True # jumps in the grid
 
                 if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and player.x - speed + 15 > 0:
