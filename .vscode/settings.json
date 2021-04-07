@@ -6,5 +6,10 @@
     "python.linting.pylintArgs":[
         "--extension-pkg-whitelist=pygame",
         "--erros-only" ],
-    "python.autoComplete.extraPaths": ["./path-to-your-code"],
+    "python.autoComplete.extraPaths": [
+        "./path-to-your-code"
+    ],
+    "python.analysis.extraPaths": [
+        "./path-to-your-code"
+    ],
 }

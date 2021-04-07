@@ -4,6 +4,7 @@ from pygame import key
 import random
 import Characters
 import SoundFx
+from Menus import menuType, Menu
 
 pygame.init()
 
@@ -26,13 +27,6 @@ def checkCollision(rect1, rect2):
     offsetY = rect2.y - rect1.y
     return rect1.mask.overlap(rect2.mask, (offsetX, offsetY)) != None
 
-# def filterMem(memArr):
-#         maxX = 0
-#         maxy = 0
-#         outArr = []
-#         for i in memArr:
-
-        
 def main():
 
         speed = 5 # the speed of the main character; can and may change with the level
@@ -42,10 +36,11 @@ def main():
         clock = pygame.time.Clock()
         run = True
         draw_window()
+        SoundFx.inGameInit()
 
         player = Characters.mainCharacter(round((WIDTH - offset) / 2), 455)
         canGoIngrid = False
-        freedomCoor = (0, 0) # the coordinate of which the player held down the rshift key to release themselves!
+        freedomCoor = (player.x, player.y) # the coordinate of which the player held down the rshift key to release themselves!
 
         enemies = [] 
         lastKey =  None   
@@ -125,6 +120,14 @@ def main():
                 elif (keys[pygame.K_DOWN] or keys[pygame.K_s]) and player.y + speed + offset < HEIGHT :
                         if canGoIngrid or (player.x <= 0 or player.x >= WIDTH - offset - 6):
                                 player.y += speed
+                
+                elif (keys[pygame.K_ESCAPE]):
+                        canGoIngrid = False
+                        memMovement.clear()
+                        SoundFx.inGamePause()
+                        Menu.renderMenu(menuType.pauseMenu)
+                        player.x, player.y = freedomCoor
+                        SoundFx.inGameUnPause()
                                 
                 WIN.fill(BLACK)  
                 player.draw(WIN)
@@ -133,14 +136,17 @@ def main():
 
                 for enemy in enemies: # enemy collisions
                         if checkCollision(player, enemy):
+                                SoundFx.inGameStop()
                                 print('u dead!')
                                 player.health -= 10
                                 SoundFx.gameOverSound.play(0)
                                 pygame.time.wait(5000)
                                 freedomCoor = (player.x, player.y)
-                                main() # reset the game
+                                Menu.renderMenu(menuType.mainMenu)
+                                main()
                 
         pygame.quit()
 
 if __name__ == "__main__":
+        Menu.renderMenu(menuType.mainMenu)
         main()
