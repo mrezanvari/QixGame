@@ -37,6 +37,7 @@ def main():
         run = True
         draw_window()
         SoundFx.inGameInit() # start music
+        traceLines = []
 
         player = Characters.mainCharacter(round((WIDTH - offset) / 2), 455)
         canGoIngrid = False
@@ -55,10 +56,10 @@ def main():
                 clock.tick(FPS)
                 if canGoIngrid: # this is for the tail line. If the player is holding down the shift key, start drawing
                         memMovement.append((player.x + offset / 2, player.y + offset))
-                        pygame.draw.aalines(WIN, WHITE, False, memMovement)
+                        traceLines.append(pygame.draw.aalines(WIN, WHITE, False, memMovement))
                         # If the player was in the grid and now the moved to the edges, we should fill the area that they have covered:
                         if (player.y <= 0 or player.y >= HEIGHT - offset - 6) or (player.x <= 0 or player.x >= WIDTH - offset - 6): 
-                                pygame.draw.aalines(WIN, WHITE, True, memMovement) # close the line
+                                traceLines.append(pygame.draw.aalines(WIN, WHITE, True, memMovement)) # close the line
                                 dirChanges.append((player.x, player.y)) # add the endpoint to the dirchange so we have all the coordinates that we need to fillout
 
                                 """
@@ -68,6 +69,7 @@ def main():
                                 pygame.display.flip()
                                 freedomCoor = (player.x, player.y) # player will let go of the shift once they made a rectangle so save that to continue from where they got to the edges
                                 dirChanges.clear()
+                                traceLines.clear()
                                 
 
                 pygame.display.update() 
@@ -145,6 +147,17 @@ def main():
                                 Menu.renderMenu(menuType.mainMenu) # jump to main menu
                                 main()
                 
+                for move in memMovement:
+                        if player.x + offset / 2 == move[0] and player.y + offset == move[1]:
+                                SoundFx.inGameStop()
+                                print('u dead!')
+                                player.health -= 10
+                                SoundFx.gameOverSound.play(0)
+                                pygame.time.wait(5000)
+                                freedomCoor = (player.x, player.y)
+                                Menu.renderMenu(menuType.mainMenu) # jump to main menu
+                                main()
+                                memMovement.clear()
         pygame.quit()
 
 if __name__ == "__main__":
