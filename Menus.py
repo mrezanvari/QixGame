@@ -40,7 +40,8 @@ class Menu():
         SoundFx.titleMenu.play()
 
         while run:
-            
+
+            pygame.time.Clock().tick(60)
             window.fill(BLACK)
             for index, option in enumerate(options): # draw texts and highlight the selected one
                 text = font.render(option, False, RED if selectedIndex == index else WHITE)
