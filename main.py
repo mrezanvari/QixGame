@@ -1,7 +1,6 @@
 import sys, os
 from numpy.lib.financial import npv
 import pygame
-from pygame import key
 import random
 import Characters
 import SoundFx
@@ -9,6 +8,7 @@ from Colors import *
 from Menus import menuType, Menu
 import scoreBoard
 import Utils
+import pygame.gfxdraw
 
 pygame.init()
 
@@ -90,7 +90,7 @@ def main():
                                 Here we need to fillout the rectangle and maybe calculate the area
                                 """
                                 print(dirChanges)
-
+                                # pygame.gfxdraw.filled_polygon(WIN, dirChanges, LIGHTPURPLE) # BUGGY!
                                 pygame.display.flip()
                                 freedomCoor = (player.x, player.y) # player will let go of the shift once they made a rectangle so save that to continue from where they got to the edges
                                 dirChanges.clear()
