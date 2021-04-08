@@ -6,19 +6,25 @@ EnemyType will indicate the type of the enemy and their corresponding movement
 import os
 import pygame
 from enum import Enum
+import main
+import Utils
 
-playerICON = pygame.image.load(os.path.join("assets", "frog.png")) #just test lol 
-playerICON = pygame.transform.scale(playerICON, (50,50))
+playerICON = Utils.loadImg(os.path.join("assets", "frog.png")) #just test lol 
+playerICON = Utils.scaleImg(playerICON, 50, 50)
 
-enemyICON = pygame.image.load(os.path.join("assets", "bomb.png")) #just test lol
-enemyICON = pygame.transform.scale(enemyICON, (40,40))
+playerGameOverIcon = Utils.loadImg(os.path.join("assets", "frog_cry.png")) #just test lol 
+playerGameOverIcon = Utils.scaleImg(playerGameOverIcon, 50, 50)
+
+playerWorried = Utils.loadImg(os.path.join("assets", "frog_worried.png")) #just test lol 
+playerWorried = Utils.scaleImg(playerWorried, 45, 45)
+
+enemyICON = Utils.loadImg(os.path.join("assets", "bomb.png")) #just test lol
+enemyICON = Utils.scaleImg(enemyICON, 40, 40)
 
 offset = 40 
 
 pygame.init()
 
-# winW, winH = pygame.display.get_surface().get_size()
-window = pygame.display.get_surface()
 
 class enemyType(Enum): # menu types; will be selected from main.py
     sparx = 0
@@ -39,6 +45,9 @@ class mainCharacter():
 
         def draw(self, screen):
                 screen.blit(self.img, (self.x, self.y))
+        
+        def setImg(self, img):
+                self.img = img
 
 class Enemy():
         def __init__(self, x, y, width=10, height=10, health=100, type=enemyType.sparx, dir='r', speed=2):
@@ -60,18 +69,18 @@ class Enemy():
                 screen.blit(self.img, (self.x, self.y))
 
         def move(self, screen):
-                winW, winH = screen.get_size()
+                
                 if self.type == enemyType.sparx:
-                        if self.dir == 'r' and self.x < winW - offset:
+                        if self.dir == 'r' and self.x < main.WIDTH - offset:
                                 self.x += self.speed
-                        if self.dir == 'r' and self.x >= winW - offset:
-                                self.x = winW - offset
+                        if self.dir == 'r' and self.x >= main.WIDTH - offset:
+                                self.x = main.WIDTH - offset
                                 self.dir = 'd'
 
-                        if self.dir == 'd' and self.y < winH - offset:
+                        if self.dir == 'd' and self.y < main.HEIGHT - offset:
                                 self.y += self.speed
-                        if self.dir == 'd' and self.y >= winH - offset:
-                                self.y = winH - offset
+                        if self.dir == 'd' and self.y >= main.HEIGHT - offset:
+                                self.y = main.HEIGHT - offset
                                 self.dir = 'l'
 
                         if self.dir == 'l' and self.x > 0:

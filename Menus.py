@@ -8,12 +8,11 @@ import os
 import pygame
 from enum import Enum
 import SoundFx
+from Colors import *
 
 pygame.font.init()
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255,99,71) # not like red red, more like tomato red!
+
 
 class menuType(Enum): # menu types; will be selected from main.py
     mainMenu = 0
@@ -44,7 +43,7 @@ class Menu():
             pygame.time.Clock().tick(60)
             window.fill(BLACK)
             for index, option in enumerate(options): # draw texts and highlight the selected one
-                text = font.render(option, False, RED if selectedIndex == index else WHITE)
+                text = font.render(option, True, TOMATORED if selectedIndex == index else WHITE)
                 window.blit(text, options[option])
                 if selectedIndex == index:
                     window.blit(hovericon, (options[option][0] - (offsetY * 5), options[option][1]))       
