@@ -27,6 +27,21 @@ def checkCollision(rect1, rect2):
     offsetY = rect2.y - rect1.y
     return rect1.mask.overlap(rect2.mask, (offsetX, offsetY)) != None
 
+def area(vertices):
+    counter = 0
+    total = 0
+    for i in range(len(vertices)):
+        counter += 1
+        if i == len(vertices) - 1:
+            j = 0
+        else:
+            j = i+1
+        side1 = vertices[i][0] * vertices[j][1]
+        side2 = vertices[i][1] * vertices[j][0]
+        total += (side1-side2)
+    return abs((total/2))
+
+
 def main():
 
         speed = 5 # the speed of the main character; can and may change with the level
@@ -44,13 +59,29 @@ def main():
         freedomCoor = (player.x, player.y) # the coordinate of which the player held down the rshift key to release themselves!
 
         enemies = [] 
-        lastKey =  None   
+        movementKey_DOWN =  False
 
-        for i in range(5): # init enemies with random spawn location
+        for i in range(3): # init enemies with random spawn location
                 enemies.append(Characters.Enemy(random.randrange(WIDTH - offset), random.randrange(HEIGHT - offset)))
+        
+        enemies.append(Characters.Enemy(0, 0, type=Characters.enemyType.sparx, dir='r', speed=2))
+        enemies.append(Characters.Enemy(WIDTH - offset, HEIGHT - offset, type=Characters.enemyType.sparx, dir='l', speed=2))
 
         for enemy in enemies:
                 enemy.draw(WIN)
+
+        def gameOver(): # this is kinda temporary better to have it somewhere else...
+                SoundFx.inGameStop()
+                print('u dead!')
+                player.health -= 10
+                SoundFx.gameOverSound.play(0)
+                pygame.time.wait(5000)
+                freedomCoor = (player.x, player.y)
+                memMovement.clear()
+                dirChanges.clear()
+                traceLines.clear()
+                Menu.renderMenu(menuType.mainMenu) # jump to main menu
+                main()
 
         while run: 
                 clock.tick(FPS)
@@ -65,12 +96,14 @@ def main():
                                 """
                                 Here we need to fillout the rectangle and maybe calculate the area
                                 """
+                                print(area(dirChanges))
 
                                 pygame.display.flip()
                                 freedomCoor = (player.x, player.y) # player will let go of the shift once they made a rectangle so save that to continue from where they got to the edges
                                 dirChanges.clear()
                                 traceLines.clear()
-                                
+                                canGoIngrid = False
+                                movementKey_DOWN = False
 
                 pygame.display.update() 
 
@@ -91,6 +124,7 @@ def main():
                                 # check for any new direction input
                                 if (event.key == pygame.K_LEFT or event.key == pygame.K_a) or (event.key == pygame.K_RIGHT or event.key == pygame.K_d) or  (event.key == pygame.K_UP or event.key == pygame.K_w) or  (event.key == pygame.K_DOWN or event.key == pygame.K_d):
                                         dirChanges.append((player.x, player.y)) # this indicates a change in direction
+                                        movementKey_DOWN = True
                                         # print("Dir Change!" , dirChanges)
                         
                         if event.type == pygame.KEYUP:
@@ -101,29 +135,38 @@ def main():
                                         memMovement.clear()
                                         dirChanges.clear()
 
+                                movementKey_DOWN = False
+
+                enemies[-1].move(WIN)
+                enemies[-2].move(WIN)
+
                 keys = pygame.key.get_pressed()
 
                 if (keys [pygame.K_RSHIFT] or keys [pygame.K_LSHIFT]): 
                         canGoIngrid = True # jumps in the grid
 
                 if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and player.x - speed + 15 > 0:
+                        movementKey_DOWN = True
                         if  canGoIngrid or (player.y <= 0 or player.y >= HEIGHT - offset - 6): # either be on the edges, or hold down the shift key to move
                                 player.x -= speed
 
 
                 elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and player.x + speed + offset < WIDTH: # elif will prevent other angles; so only right angles are allowed...
+                        movementKey_DOWN = True
                         if canGoIngrid or (player.y <= 0 or player.y >= HEIGHT - offset - 6):
                                 player.x += speed
 
                 elif (keys[pygame.K_UP] or keys[pygame.K_w]) and player.y + speed > 0:
+                        movementKey_DOWN = True
                         if canGoIngrid or (player.x <= 0 or player.x >= WIDTH - offset - 6):
                                 player.y -= speed
 
                 elif (keys[pygame.K_DOWN] or keys[pygame.K_s]) and player.y + speed + offset < HEIGHT :
+                        movementKey_DOWN = True
                         if canGoIngrid or (player.x <= 0 or player.x >= WIDTH - offset - 6):
                                 player.y += speed
                 
-                elif (keys[pygame.K_ESCAPE]): # pause menu
+                if (keys[pygame.K_ESCAPE]): # pause menu
                         canGoIngrid = False
                         memMovement.clear()
                         SoundFx.inGamePause()
@@ -138,26 +181,18 @@ def main():
 
                 for enemy in enemies: # enemy collisions
                         if checkCollision(player, enemy):
-                                SoundFx.inGameStop()
-                                print('u dead!')
-                                player.health -= 10
-                                SoundFx.gameOverSound.play(0)
-                                pygame.time.wait(5000)
-                                freedomCoor = (player.x, player.y)
-                                Menu.renderMenu(menuType.mainMenu) # jump to main menu
-                                main()
-                
-                for move in memMovement:
-                        if player.x + offset / 2 == move[0] and player.y + offset == move[1]:
-                                SoundFx.inGameStop()
-                                print('u dead!')
-                                player.health -= 10
-                                SoundFx.gameOverSound.play(0)
-                                pygame.time.wait(5000)
-                                freedomCoor = (player.x, player.y)
-                                Menu.renderMenu(menuType.mainMenu) # jump to main menu
-                                main()
-                                memMovement.clear()
+                               gameOver()
+
+                        for move in memMovement:
+                                if enemy.x == move[0] and enemy.y == move[1]:
+                                        gameOver()
+
+                if movementKey_DOWN:
+                        for move in memMovement:
+                                if player.x + offset / 2 == move[0] and player.y + offset == move[1]: # player coordinates shall not collide with any of the tracing lines
+                                        gameOver()
+                                        
+
         pygame.quit()
 
 if __name__ == "__main__":
