@@ -42,17 +42,6 @@ def area(vertices):
         total += (side1-side2)
     return abs((total/2))
 
-def filterMem(inputArr):
-        seen = set()
-        temp = inputArr
-        for key, value in list(inputArr.items()):
-                value = tuple(inputArr[key])
-                if value in seen:
-                        del inputArr[key]
-                else:
-                        seen.add(value)
-        print(inputArr)
-
 
 def main():
 
