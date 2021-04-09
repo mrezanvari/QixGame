@@ -9,6 +9,7 @@ from Menus import menuType, Menu
 import scoreBoard
 import Utils
 import pygame.gfxdraw
+pygame.mouse.set_visible(False)
 
 pygame.init()
 
@@ -54,12 +55,15 @@ def main():
         enemies.append(Characters.Enemy(0, 0, type=Characters.enemyType.sparx, dir='r', speed=3))
         enemies.append(Characters.Enemy(WIDTH - offset, HEIGHT - offset, type=Characters.enemyType.sparx, dir='l', speed=2))
 
+        playerGroup = pygame.sprite.Group()
+        playerGroup.add(player)
+
+        enemyGroup = pygame.sprite.Group()
         for enemy in enemies:
-                enemy.draw(WIN)
+                enemyGroup.add(enemy)
 
         mainScoreBoard = scoreBoard.panel(scoreBoardSize, WHITE)
         
-
         def gameOver(): # this is kinda temporary better to have it somewhere else...
                 SoundFx.inGameStop()
                 player.setImg(Characters.playerGameOverIcon)
@@ -84,13 +88,14 @@ def main():
                         # If the player was in the grid and now the moved to the edges, we should fill the area that they have covered:
                         if (player.y <= 0 or player.y >= HEIGHT - offset - 6) or (player.x <= 0 or player.x >= WIDTH - offset - 6) and isMoving: # is moving can be removed but it prevents false valuse
                                 traceLines.append(pygame.draw.aalines(WIN, WHITE, True, memMovement)) # close the line
-                                dirChanges.append((player.x, player.y)) # add the endpoint to the dirchange so we have all the coordinates that we need to fillout
+                                dirChanges.append((player.x + offset / 2, player.y + offset)) # add the endpoint to the dirchange so we have all the coordinates that we need to fillout
 
                                 """
                                 Here we need to fillout the rectangle and maybe calculate the area
                                 """
-                                print(dirChanges)
-                                # pygame.gfxdraw.filled_polygon(WIN, dirChanges, LIGHTPURPLE) # BUGGY!
+                                # print(dirChanges)
+                                if len(dirChanges) > 2:
+                                        pygame.gfxdraw.filled_polygon(WIN, dirChanges, LIGHTPURPLE) # BUGGY!
                                 pygame.display.flip()
                                 freedomCoor = (player.x, player.y) # player will let go of the shift once they made a rectangle so save that to continue from where they got to the edges
                                 dirChanges.clear()
@@ -114,13 +119,13 @@ def main():
                                         freedomCoor = (player.x, player.y)
                                         memMovement.append((player.x + offset / 2, player.y + offset))
                                         dirChanges.clear()
-                                        dirChanges.append((player.x, player.y))
+                                        dirChanges.append((player.x + offset / 2, player.y + offset))
                                 
                                 # check for any new direction input
                                 if (event.key == pygame.K_LEFT or event.key == pygame.K_a) or (event.key == pygame.K_RIGHT or event.key == pygame.K_d) or (event.key == pygame.K_UP or event.key == pygame.K_w) or  (event.key == pygame.K_DOWN or event.key == pygame.K_s) and canGoInGrid:
                                         if event.key != lastKey: # to prevent duplication if the user stopped and started again in the same direction
                                                 # print('X =', player.x, '     Y =', player.y) # debug
-                                                dirChanges.append((player.x, player.y)) # this indicates a change in direction
+                                                dirChanges.append((player.x + offset / 2, player.y + offset)) # this indicates a change in direction
                                                 lastKey = event.key
                                                 isMoving = True
                                         movementKey_DOWN = True
@@ -175,24 +180,18 @@ def main():
                         Menu.renderMenu(menuType.pauseMenu)
                         player.x, player.y = freedomCoor # spawn back
                         SoundFx.inGameUnPause()
-                                
-                WIN.fill(BLACK, (0, 0, WIDTH, HEIGHT)) # fill just the game area
-                player.draw(WIN)
-
-                for enemy in enemies:
-                        enemy.draw(WIN)
                 
                 if movementKey_DOWN:
                         for move in memMovement:
                                 if player.x + offset / 2 == move[0] and player.y + offset == move[1]: # player coordinates shall not collide with any of the tracing lines
                                         gameOver()
 
-                for enemy in enemies: # enemy collisions
-                        if Utils.checkCollision(player, enemy):
-                                if enemy.type == Characters.enemyType.sparx:
+                enemyCollisions = pygame.sprite.spritecollide(player, enemyGroup, False)
+                for enemy in enemyCollisions:
+                        if enemy.type == Characters.enemyType.sparx:
                                         player.health -= 10
                                         if player.health <= 0: gameOver()
-                                        if player.health <= 40: player.setImg(Characters.playerWorried)
+                                        if player.health <= 30: player.setImg(Characters.playerWorried)
                                         player.x, player.y = freedomCoor
                                         canGoInGrid = False
                                         freedomCoor = (player.x, player.y) 
@@ -210,47 +209,54 @@ def main():
                                                 enemy.dir = 'u'
                                                 enemy.y -= 50
                                         
-                                else: # if qix more penalty
-                                        player.health -= 50
-                                        if player.health <= 0: gameOver()
-                                        player.x, player.y = (round((WIDTH - offset) / 2), HEIGHT - offset - 5)
-                                        canGoInGrid = False
-                                        freedomCoor = (player.x, player.y) 
+                        else: # if qix more penalty
+                                player.health -= 50
+                                if player.health <= 0: gameOver()
+                                player.x, player.y = (round((WIDTH - offset) / 2), HEIGHT - offset - 5)
+                                canGoInGrid = False
+                                freedomCoor = (player.x, player.y) 
+                try:
+                        for move in traceLines:
+                                for enemy in enemies:
+                                        if enemy.rect.collidepoint(move.x, move.y):
+                                                if enemy.type == Characters.enemyType.sparx:
+                                                        player.health -= 10
+                                                        if player.health <= 0: gameOver()
+                                                        if player.health <= 30: player.setImg(Characters.playerWorried)
+                                                        player.x, player.y = freedomCoor
+                                                        canGoInGrid = False
+                                                        freedomCoor = (player.x, player.y) 
+                                                        # sparx change direction after collision
+                                                        if enemy.dir == 'r': 
+                                                                enemy.dir = 'l'
+                                                                enemy.x -= 50
+                                                        elif enemy.dir == 'l': 
+                                                                enemy.dir = 'r'
+                                                                enemy.x += 50
+                                                        elif enemy.dir == 'u': 
+                                                                enemy.dir = 'd'
+                                                                enemy.y += 50
+                                                        elif enemy.dir == 'd': 
+                                                                enemy.dir = 'u'
+                                                                enemy.y -= 50
+                                                                
+                                                else: # if qix more penalty
+                                                        player.health -= 50
+                                                        if player.health <= 0: gameOver()
+                                                        player.x, player.y = (round((WIDTH - offset) / 2), HEIGHT - offset - 5)
+                                                        canGoInGrid = False
+                                                        freedomCoor = (player.x, player.y) 
 
-                        for move in memMovement:
-                                player.x + offset / 2, player.y + offset
-                                if enemy.x == move[0] and enemy.y == (move[1] - offset / 2):
-                                        if enemy.type == Characters.enemyType.sparx:
-                                                player.health -= 10
-                                                if player.health <= 0: gameOver()
-                                                if player.health <= 40: player.setImg(Characters.playerWorried)
-                                                player.x, player.y = freedomCoor
-                                                canGoInGrid = False
-                                                freedomCoor = (player.x, player.y) 
-                                                # sparx change direction after collision
-                                                if enemy.dir == 'r': 
-                                                        enemy.dir = 'l'
-                                                        enemy.x -= 50
-                                                elif enemy.dir == 'l': 
-                                                        enemy.dir = 'r'
-                                                        enemy.x += 50
-                                                elif enemy.dir == 'u': 
-                                                        enemy.dir = 'd'
-                                                        enemy.y += 50
-                                                elif enemy.dir == 'd': 
-                                                        enemy.dir = 'u'
-                                                        enemy.y -= 50
-                                                
-                                                
-                                        else: # if qix more penalty
-                                                player.health -= 50
-                                                if player.health <= 0: gameOver()
-                                                player.x, player.y = (round((WIDTH - offset) / 2), HEIGHT - offset - 5)
-                                                canGoInGrid = False
-                                                freedomCoor = (player.x, player.y) 
-
+                                                # break out right now because there will be more collisions and we dont want to penalize more than once
+                                                raise "breakAll!" # this is such a stupid fix but it works so...
+                except: pass
                 
-                                        
+                WIN.fill(BLACK, (0, 0, WIDTH, HEIGHT)) # fill just the game area
+                playerGroup.update()
+                playerGroup.draw(WIN)
+                enemyGroup.update()
+                enemyGroup.draw(WIN)  
+
 
         pygame.quit()
 

@@ -10,7 +10,7 @@ import main
 import Utils
 
 playerICON = Utils.loadImg(os.path.join("assets", "frog.png")) #just test lol 
-playerICON = Utils.scaleImg(playerICON, 50, 50)
+playerICON = Utils.scaleImg(playerICON, 40, 43)
 
 playerGameOverIcon = Utils.loadImg(os.path.join("assets", "frog_cry.png")) #just test lol 
 playerGameOverIcon = Utils.scaleImg(playerGameOverIcon, 50, 50)
@@ -30,8 +30,9 @@ class enemyType(Enum): # menu types; will be selected from main.py
     sparx = 0
     qix = 1
 
-class mainCharacter():
+class mainCharacter(pygame.sprite.Sprite):
         def __init__(self, x, y, width=10, height=10, health=100):
+                super().__init__()
                 self.x = x
                 self.y = y
                 self.width = width
@@ -39,18 +40,23 @@ class mainCharacter():
                 self.health = health
                 self.max_health = health
                 self.color = [255,100,40]
-                self.img = playerICON
-                self.rect = self.img.get_rect()
-                self.mask = pygame.mask.from_surface(self.img)
+                self.image = playerICON
+                self.rect = self.image.get_rect()
+                self.rect.topleft = (self.x, self.y)
+                self.mask = pygame.mask.from_surface(self.image)
 
         def draw(self, screen):
-                screen.blit(self.img, (self.x, self.y))
+                screen.blit(self.image, (self.x, self.y))
         
-        def setImg(self, img):
-                self.img = img
+        def update(self):
+                self.rect.topleft = (self.x, self.y)
 
-class Enemy():
+        def setImg(self, img):
+                self.image = img
+
+class Enemy(pygame.sprite.Sprite):
         def __init__(self, x, y, width=10, height=10, health=100, type=enemyType.sparx, dir='r', speed=2):
+                super().__init__()
                 self.x = x
                 self.y = y
                 self.width = width
@@ -58,15 +64,19 @@ class Enemy():
                 self.health = health
                 self.max_health = health
                 self.color = [255,100,40]
-                self.img = enemyICON
-                self.rect = self.img.get_rect()
-                self.mask = pygame.mask.from_surface(self.img)
+                self.image = enemyICON
+                self.rect = self.image.get_rect()
+                self.rect.topleft = (self.x, self.y)
+                self.mask = pygame.mask.from_surface(self.image)
                 self.type=type
                 self.dir=dir
                 self.speed  = speed
 
         def draw(self, screen):
-                screen.blit(self.img, (self.x, self.y))
+                screen.blit(self.image, (self.x, self.y))
+
+        def update(self):
+                self.rect.topleft = (self.x, self.y)
 
         def move(self, screen):
                 
