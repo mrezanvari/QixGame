@@ -40,6 +40,7 @@ def main():
         traceLines = []
         isMoving = False # this indicates that the player is moving (This is not critical but it will help)
 
+        global currFrame
         player = Characters.mainCharacter(round((WIDTH - offset) / 2), HEIGHT - offset - 5)
         canGoInGrid = False
         freedomCoor = (player.x, player.y) # the coordinate of which the player held down the rshift key to release themselves!
@@ -66,8 +67,12 @@ def main():
         
         def gameOver(): # this is kinda temporary better to have it somewhere else...
                 SoundFx.inGameStop()
+                WIN.fill(BLACK, (0, 0, WIDTH, HEIGHT)) # fill just the game area
+                enemyGroup.update()
+                enemyGroup.draw(WIN)  
                 player.setImg(Characters.playerGameOverIcon)
-                player.draw(WIN)
+                playerGroup.update()
+                playerGroup.draw(WIN)
                 pygame.display.update() 
                 print('u dead!')
                 player.health = 0
@@ -211,6 +216,7 @@ def main():
                                         
                         else: # if qix more penalty
                                 player.health -= 50
+                                if player.health <= 30: player.setImg(Characters.playerWorried)
                                 if player.health <= 0: gameOver()
                                 player.x, player.y = (round((WIDTH - offset) / 2), HEIGHT - offset - 5)
                                 canGoInGrid = False
@@ -242,6 +248,7 @@ def main():
                                                                 
                                                 else: # if qix more penalty
                                                         player.health -= 50
+                                                        if player.health <= 30: player.setImg(Characters.playerWorried)
                                                         if player.health <= 0: gameOver()
                                                         player.x, player.y = (round((WIDTH - offset) / 2), HEIGHT - offset - 5)
                                                         canGoInGrid = False
@@ -255,7 +262,7 @@ def main():
                 playerGroup.update()
                 playerGroup.draw(WIN)
                 enemyGroup.update()
-                enemyGroup.draw(WIN)  
+                enemyGroup.draw(WIN)
 
 
         pygame.quit()

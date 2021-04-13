@@ -13,7 +13,7 @@ playerICON = Utils.loadImg(os.path.join("assets", "frog.png")) #just test lol
 playerICON = Utils.scaleImg(playerICON, 40, 43)
 
 playerGameOverIcon = Utils.loadImg(os.path.join("assets", "frog_cry.png")) #just test lol 
-playerGameOverIcon = Utils.scaleImg(playerGameOverIcon, 50, 50)
+playerGameOverIcon = Utils.scaleImg(playerGameOverIcon, 55, 55)
 
 playerWorried = Utils.loadImg(os.path.join("assets", "frog_worried.png")) #just test lol 
 playerWorried = Utils.scaleImg(playerWorried, 45, 45)
